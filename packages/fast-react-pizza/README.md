@@ -46,3 +46,17 @@
     - `errorElement: <Error />`
     - `const error = useRouteError()`
   - action
+  - `useFetcher` 用router中定义的loader
+
+## tailwindcss
+
+### installation
+
+```sh
+# 排序
+npm install -D prettier prettier-plugin-tailwindcss
+```
+
+- `@apply`
+
+## redux
