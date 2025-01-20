@@ -13,5 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "@learn-react18/demo": "workspace:0.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.18.0",
+    "eslint-config-react-app": "^7.0.1",
+    "vite-plugin-eslint": "^1.8.1"
   }
 }

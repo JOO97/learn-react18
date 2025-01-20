@@ -1,6 +1,6 @@
-# learn-react18
+# React18
 
-## Concepts
+## 1 Concepts
 
 > based on components, declarative, state-drivin
 
@@ -89,13 +89,13 @@ React 的渲染过程必须自始至终是纯粹的。组件应该只 **返回**
 - [`e.stopPropagation()`](https://developer.mozilla.org/docs/Web/API/Event/stopPropagation) 阻止触发绑定在外层标签上的事件处理函数。
 - [`e.preventDefault()`](https://developer.mozilla.org/docs/Web/API/Event/preventDefault) 阻止少数事件的默认浏览器行为。
 
-#### State
+### State
 
-##### Hooks
+Hooks
 
 **Hooks ——以 `use` 开头的函数——只能在组件或[自定义 Hook](https://zh-hans.react.dev/learn/reusing-logic-with-custom-hooks) 的最顶层调用。** 不能在条件语句、循环语句或其他嵌套函数内调用 Hook。Hook 是函数，但将它们视为关于组件需求的无条件声明会很有帮助。
 
-##### useState
+#### useState
 
 1. **State 变量** 用于保存渲染间的数据。
 2. **State setter 函数** 更新变量并触发 React 再次渲染组件。
@@ -165,7 +165,7 @@ function updateName(name) {
 
 - 不要直接修改数组，而是创建它的一份 **新的** 拷贝，然后使用新的数组来更新它的状态。
 
-#### 渲染
+### 渲染
 
 > 渲染必须始终是一次 **纯计算**
 
@@ -184,7 +184,7 @@ React 执行渲染
 - **对于初次渲染，** React 会使用 [`appendChild()`](https://developer.mozilla.org/docs/Web/API/Node/appendChild) DOM API 将其创建的所有 DOM 节点放在屏幕上。
 - **对于重渲染，** React 将应用最少的必要操作（在渲染时计算！），以使得 DOM 与最新的渲染输出相互匹配。
 
-##### State 快照
+#### State 快照
 
 当 React 重新渲染一个组件时：
 
@@ -208,11 +208,11 @@ React 执行渲染
 }
 ```
 
-##### 批处理
+#### 批处理
 
 等到事件处理函数中的所有 代码都运行完毕再处理 state 更新
 
-##### 工作机制
+#### 工作机制
 
 每次渲染时，整个函数会从头到尾重新执行
 
@@ -429,6 +429,45 @@ export default function Section({ level, children }) {
 }
 ```
 
+自定义Provider
+
+```jsx
+
+import { createContext,useState } from 'react'
+/* 1 Create context */
+export const PostContext = createContext()
+export  function PostProvider ({children}) {
+  // ...
+  /* 2 Provide value */
+  return <PostContext.Provider value={{
+      posts: searchedPosts,
+      onAddPost:handleAddPost,
+      onClearPosts: handleClearPosts,
+      searchQuery,
+      setSearchQuery
+    }}>{children}</PostContext.Provider>
+}
+/* hook */
+export function usePosts() {
+    const context = useContext(PostContext)
+    if(context === undefined) throw new Error('PostContext was used outside of the PostProvider')
+    return context
+}
+
+// 使用
+function App() {
+  const {posts} = usePosts()
+  
+  return <PostProvider>
+      <section>
+      ....
+      </section>
+    </PostProvider>
+}
+```
+
+
+
 #### Reducer 与 Context 结合
 
 为子组件提供 state 和 dispatch 函数：
@@ -437,11 +476,11 @@ export default function Section({ level, children }) {
 2. 让组件的 context 使用 reducer。
 3. 使用组件中需要读取的 context。
 
-### 脱围机制（Escape Hatches）
+## 2 脱围机制（Escape Hatches）
 
 > 控制和同步 React 之外的系统
 
-#### ref
+### ref
 
 > 当一条信息仅被事件处理器需要，并且更改它不需要重新渲染时，使用 ref 可能会更高效。
 
@@ -521,7 +560,7 @@ export default function () {
 }
 ```
 
-##### 组件不暴露 DOM
+#### 组件不暴露 DOM
 
 useImperativeHandle
 
@@ -542,7 +581,7 @@ function MyInput({ ref }) {
 }
 ```
 
-##### flushSync
+flushSync
 
 > 强制 React 同步更新（“刷新”）DOM
 
@@ -553,7 +592,7 @@ flushSync(() => {
 listRef.current.lastChild.scrollIntoView()
 ```
 
-#### Effect
+### Effect
 
 > 允许在渲染结束后执行一些代码，以便将组件与 React 外部的某个系统相同步。
 >
@@ -591,7 +630,7 @@ function MyComponent() {
 }
 ```
 
-##### 使用注意事项
+使用注意事项
 
 > 如果这个逻辑是由某个特定的交互引起的，请将它保留在相应的事件处理函数中。如果是由用户在屏幕上 **看到** 组件时引起的，请将它保留在 Effect 中。
 
@@ -604,18 +643,18 @@ function MyComponent() {
 - 可变值不能作为依赖项
 - 抑制代码检查 `eslint-disable-next-line react-hooks/exhaustive-deps`
 
-##### Effect 的声明周期
+#### Effect 的声明周期
 
 - 每个 Effect 描述了一个独立的同步过程，可以 **开始** 和 **停止**。独立地考虑每个 Effect（如何开始和停止同步），而不是从组件的角度思考
 
-##### 将事件从 Effect 中分开
+#### 将事件从 Effect 中分开
 
 > 一个 Effect 只在响应某些值时重新运行，但是在其他值变化时不重新运行
 
 - 事件处理函数只在响应特定的交互操作时运行
 - 每当需要同步，Effect 就会运行
 
-###### useEffectEvent
+#### useEffectEvent
 
 > 实验性 API
 >
@@ -639,31 +678,27 @@ useEffect(() => {
 - `onMessage`，`onTick`，`onVisit` 或者 `onConnected` 是优秀的 Effect Event 名称。
 - `onMount`，`onUpdate`，`onUnmount` 或者 `onAfterRender` 太通用了，以至于很容易不小心就把一些”应该”是响应式的代码放入其中。
 
-#### hooks
-
-##### 规则
+## 3 hooks
 
 - 只能在顶层调用，不能在条件语句中使用。react内部对hook是以调用顺序来标识hook的
 
 ![alt text](IMG_1965.PNG)
 
-- 
-
-##### 自定义 Hook
+### 自定义 Hook
 
 - 必须永远以 `use` 开头
 - 只有 Hook 和组件可以调用其他 Hook
 - 创建的函数没有调用任何 Hook 方法，在命名时应避免使用 `use` 前缀，把它当成一个常规函数去命名
 
-##### useCallback
+### useCallback
 
-##### useMemo
+### useMemo
 
-##### useTansition
+### useTansition
 
-##### useDeferredValue
+### useDeferredValue
 
-不常用
+### 不常用
 
 - useImperativeHandle
 - useDebugValue
@@ -701,14 +736,135 @@ function ChatIndicator() {
 }
 ```
 
-### 组件
+## 5 组件
 
-#### Fragment
+### Fragment
 
 - `<Fragment></Fragment> `
 - `<></>`
 
-## How react works behind the scenes
+### Suspense
+
+> 在组件完成加载前展示后备用方案
+
+## 6 API
+
+### memo
+
+> `memo` 允许你的组件在 props 没有改变的情况下跳过重新渲染。
+
+```js
+const Greeting = memo(function Greeting({ name }) {
+  return <h1>Hello, {name}!</h1>;
+});
+```
+
+### lazy
+
+```jsx
+const Homepage = lazy(() => import('./pages/Homepage'))
+
+function App() {
+  return <Suspense fallback={<Loading />}>
+    <Homepage />
+  </Suspense>
+}
+```
+
+## 7 Redux
+
+### redux
+
+#### react-redux
+
+##### useSelector
+
+##### useDispatch
+
+```js
+const { fullName } = useSelector((store) => store.customer)
+
+const dispatch = useDispatch()
+dispatch(createCustomer(fullName, nationalId))
+```
+
+#### Middleware
+
+> 在dispatch之后 store之前
+>
+> 处理side effect
+
+#### redux-thunk
+
+```js
+import { combineReducers, createStore, applyMiddleware } from 'redux'
+import thunk from 'redux-thunk'
+
+const store = createStore(rootReducer, applyMiddleware(thunk))
+```
+
+#### Redux DevTools
+
+`redux-devtools-extension`
+
+```js
+import { composeWithDevTools } from 'redux-devtools-extension'
+const store = createStore(
+  rootReducer,
+  composeWithDevTools(applyMiddleware(thunk))
+)
+```
+
+### Redux toolkit
+
+`@reduxjs/toolki`
+
+#### configureStore
+
+```js
+import { configureStore } from '@reduxjs/toolkit'
+const store = configureStore({
+  reducer: {
+    account: accountReducer,
+    customer: customerReducer
+  }
+})
+```
+
+#### createSlice
+
+```js
+import { createSlice } from '@reduxjs/toolkit'
+
+const customerSlice = createSlice({
+  name: 'customer',
+  initialState: { /* ...*/ },
+  reducers: {
+    createCustomer: {
+      prepare(fullName, nationalID) {
+        return {
+          payload: { /* ...*/ }
+        }
+      },
+      reducer(state, action) {
+        state.fullName = action.payload.fullName
+        //...
+      }
+    }
+  }
+})
+export const { createCustomer, updateName } = customerSlice.actions
+export default customerSlice.reducer
+```
+
+#### 对比context api
+
+- 对于不会频繁修改的全局数据可以用contex api（不用考虑优化问题）： 主题色、用户信息等
+- 对于频繁更新的数据或复杂嵌套数据可以用redux：购物车数据等
+
+
+
+## 3 How react works behind the scenes
 
 ### 组件
 
@@ -766,3 +922,495 @@ function ChatIndicator() {
 ![alt text](IMG_1960.jpg)
 
 ![alt text](IMG_1961.jpg)
+
+### Performance
+
+性能优化方向
+
+- 防止无用的render：render没有改变任何的dom
+
+  > 导致render：`state changes` `context changes` `parent re-renders`
+
+  - memo：缓存组件
+  - useMemo：缓存数据
+  - useCallback：缓存函数
+  - 元素作为children props传入
+
+  ```jsx
+  function Test() {
+    return (
+      <div>
+        <h1>Slow counter?!?</h1>
+        <Counter>
+        {/* 元素作为props，不会被所接收组件的re-render影响 */}  
+          <SlowComponent /> 
+        </Counter>
+      </div>
+    );
+  }
+  ```
+
+- 提高应用的响应速度
+
+  - useMemo
+  - useCallback
+  - useTransition
+
+- 减少打包文件大小
+
+
+
+## 4 Router
+
+组件
+
+
+
+loader
+
+
+
+
+
+## 5 styling react
+
+
+
+
+
+
+learn-react18                                                      //
+├─ .DS_Store                                                       //
+├─ .git                                                            //
+│  ├─ COMMIT_EDITMSG                                               //
+│  ├─ FETCH_HEAD                                                   //
+│  ├─ HEAD                                                         //
+│  ├─ ORIG_HEAD                                                    //
+│  ├─ config                                                       //
+│  ├─ description                                                  //
+│  ├─ hooks                                                        //
+│  │  ├─ applypatch-msg.sample                                     //
+│  │  ├─ commit-msg.sample                                         //
+│  │  ├─ fsmonitor-watchman.sample                                 //
+│  │  ├─ post-update.sample                                        //
+│  │  ├─ pre-applypatch.sample                                     //
+│  │  ├─ pre-commit.sample                                         //
+│  │  ├─ pre-merge-commit.sample                                   //
+│  │  ├─ pre-push.sample                                           //
+│  │  ├─ pre-rebase.sample                                         //
+│  │  ├─ pre-receive.sample                                        //
+│  │  ├─ prepare-commit-msg.sample                                 //
+│  │  ├─ sendemail-validate.sample                                 //
+│  │  └─ update.sample                                             //
+│  ├─ index                                                        //
+│  ├─ info                                                         //
+│  │  └─ exclude                                                   //
+│  ├─ objects                                                      //
+│  │  ├─ 08                                                        //
+│  │  │  └─ 0d6c77ac21bb2ef88a6992b2b73ad93daaca92                 //
+│  │  ├─ 0c                                                        //
+│  │  │  └─ 589eccd4d48e270e161a1ab91baee5e5f4b4bc                 //
+│  │  ├─ 13                                                        //
+│  │  │  └─ 35d605152c81313f64e92453c0f1987215824c                 //
+│  │  ├─ 1a                                                        //
+│  │  │  └─ 8c21dfbf5e8f207400c4b6f2fefafc3753f017                 //
+│  │  ├─ 1c                                                        //
+│  │  │  └─ 9c49842749d677882e99e5840611a54a4fce18                 //
+│  │  ├─ 1d                                                        //
+│  │  │  ├─ 4be627c98dab94da3258f25e04ed09effa55d2                 //
+│  │  │  └─ 92f87336db037a0dcdd01d326b8e39eb865678                 //
+│  │  ├─ 1f                                                        //
+│  │  │  └─ 03afeece5ac28064fa3c73a29215037465f789                 //
+│  │  ├─ 20                                                        //
+│  │  │  └─ be1dffd2892c5e6550e38ed6e1ca2d0cb83583                 //
+│  │  ├─ 21                                                        //
+│  │  │  └─ 88b0e9ba0c83966572e055cd20352c1a8f01d8                 //
+│  │  ├─ 23                                                        //
+│  │  │  └─ 8d2e4e6436b353404369d9a59fda5f1f980657                 //
+│  │  ├─ 25                                                        //
+│  │  │  ├─ c6102003bfef0db0434d3f1b8577b2114e3342                 //
+│  │  │  └─ f7a63ee61941357719d9f9bdfc6d2b7d59f36b                 //
+│  │  ├─ 2a                                                        //
+│  │  │  ├─ 5bd87abccbeebce872e0541e3bb44cd8d47e54                 //
+│  │  │  └─ a8a5bf070d05e9155ba52f87ce58341737a4a9                 //
+│  │  ├─ 2c                                                        //
+│  │  │  └─ c8a158dfd29c676de8eece634275045f633bd4                 //
+│  │  ├─ 2f                                                        //
+│  │  │  └─ 6dd062382caf62d19e461ae1769fb0d4c444ea                 //
+│  │  ├─ 31                                                        //
+│  │  │  └─ 3b270c443888e3a8e0fc490c9ccff11776ff80                 //
+│  │  ├─ 39                                                        //
+│  │  │  ├─ 1b83d3fc4dded8353379ea4f6f0337a47d3452                 //
+│  │  │  └─ 2b0b233eec67f3bfae1d13cc36eecdbc9a5294                 //
+│  │  ├─ 3a                                                        //
+│  │  │  └─ bb74f8ffee33b67c274d2cd92706bda9556a1c                 //
+│  │  ├─ 3b                                                        //
+│  │  │  └─ 1d119fdb2492edfd74255bfa509dfd068b7f42                 //
+│  │  ├─ 3e                                                        //
+│  │  │  └─ 0ae68e652123e5505ece5d160646b4ffa4608c                 //
+│  │  ├─ 40                                                        //
+│  │  │  └─ 4fd9712a1e5ced589aa7b2325129049bb25b45                 //
+│  │  ├─ 44                                                        //
+│  │  │  └─ 41085838227af6452a11daeb0b5121d744ba05                 //
+│  │  ├─ 49                                                        //
+│  │  │  └─ 40ca10c3acc7ce0a1d73ca2542f5f6236bb91d                 //
+│  │  ├─ 4d                                                        //
+│  │  │  └─ 29575de80483b005c29bfcac5061cd2f45313e                 //
+│  │  ├─ 52                                                        //
+│  │  │  └─ 53d3ad9e6be6690549cb255f5952337b02401d                 //
+│  │  ├─ 54                                                        //
+│  │  │  └─ d492f43df3a3f03f291c9c7282d840b96fdc26                 //
+│  │  ├─ 55                                                        //
+│  │  │  └─ 7b37c44d5cb352ff331f90e7fba0189cdfa65e                 //
+│  │  ├─ 58                                                        //
+│  │  │  └─ beeaccd87e230076cab531b8f418f40b6d1aeb                 //
+│  │  ├─ 5b                                                        //
+│  │  │  └─ 9e3d00c4984f1587e4bb01110a2124b1ab8c97                 //
+│  │  ├─ 61                                                        //
+│  │  │  └─ 19ad9a8faaa5073a454f67b50fb98a25972fd2                 //
+│  │  ├─ 62                                                        //
+│  │  │  └─ a3d0825445ccdb692b9d443d787fb522e1287c                 //
+│  │  ├─ 69                                                        //
+│  │  │  └─ 5fcff25f788c9a732b4332efeba277d398c632                 //
+│  │  ├─ 6c                                                        //
+│  │  │  └─ 87de9bb3358469122cc991d5cf578927246184                 //
+│  │  ├─ 77                                                        //
+│  │  │  └─ e5eca38f5e0c2ef21cfb2ea743b70bb0d2fe0b                 //
+│  │  ├─ 7c                                                        //
+│  │  │  └─ dc3ace0e931bf953c7e7de8b17ce6b1c56ff81                 //
+│  │  ├─ 7d                                                        //
+│  │  │  └─ 05a1d3dd6a269d228a08466100edd52a7161b6                 //
+│  │  ├─ 7e                                                        //
+│  │  │  └─ 80f97a9b4aa0ec408328793c24a8c70659cd57                 //
+│  │  ├─ 83                                                        //
+│  │  │  └─ 7eec84716156191f8f770c6c9ae95daf9dc0bf                 //
+│  │  ├─ 84                                                        //
+│  │  │  └─ ae8d237cee86bc3fc8bb148f879d63305cb719                 //
+│  │  ├─ 86                                                        //
+│  │  │  ├─ 022d63902afd50ba3889c9b6b2d8f39fec143c                 //
+│  │  │  └─ a62b2bee45b82fad177c50d1b33d68cb1b2fe7                 //
+│  │  ├─ 89                                                        //
+│  │  │  └─ e80001da0be2a9e0006e5726ffbee979fe4859                 //
+│  │  ├─ 8b                                                        //
+│  │  │  └─ 0f57b91aeb45c54467e29f983a0893dc83c4d9                 //
+│  │  ├─ 8d                                                        //
+│  │  │  └─ 96efcf9f19049e0f5c5ab64411cd678bc8ead7                 //
+│  │  ├─ 8e                                                        //
+│  │  │  └─ 29b36dea7f04ae8729d8b33ecc05c3c9b0fe46                 //
+│  │  ├─ 8f                                                        //
+│  │  │  └─ 2609b7b3e0e3897ab3bcaad13caf6876e48699                 //
+│  │  ├─ 93                                                        //
+│  │  │  └─ ce719da371ea9d94c1d0f4db50cd0c7a2b4c77                 //
+│  │  ├─ 94                                                        //
+│  │  │  ├─ 3ce3af17af4a48da808211844841f30c9620b7                 //
+│  │  │  ├─ c0b2fc152a086447a04f62793957235d2475be                 //
+│  │  │  └─ dbb191841e3b9cca127e6a2a349cf7b0f35135                 //
+│  │  ├─ 95                                                        //
+│  │  │  └─ 6b9be166994753d8cacd7daad440876e3e0e27                 //
+│  │  ├─ 9c                                                        //
+│  │  │  └─ 60e88b17ab8e230629a4904d0652f8fbe3a50e                 //
+│  │  ├─ 9d                                                        //
+│  │  │  ├─ 4af92f2fb77b782c07fa9c59123ebc96a62dab                 //
+│  │  │  └─ fc1c058cebbef8b891c5062be6f31033d7d186                 //
+│  │  ├─ 9e                                                        //
+│  │  │  └─ b59044bee9b3f489ecdbdc5c15771283ff9553                 //
+│  │  ├─ 9f                                                        //
+│  │  │  └─ b1f723002fc85be4bc4badd938db13ba373968                 //
+│  │  ├─ a0                                                        //
+│  │  │  └─ a163d0dc4f3c74773893846a3c025c51028d5b                 //
+│  │  ├─ a1                                                        //
+│  │  │  └─ 1777cc471a4344702741ab1c8a588998b1311a                 //
+│  │  ├─ a4                                                        //
+│  │  │  └─ e47a6545bc15971f8f63fba70e4013df88a664                 //
+│  │  ├─ a5                                                        //
+│  │  │  └─ 47bf36d8d11a4f89c59c144f24795749086dd1                 //
+│  │  ├─ a6                                                        //
+│  │  │  └─ 4eb022bde18ee50c5fe6e6bff1af74f0f1ac26                 //
+│  │  ├─ aa                                                        //
+│  │  │  └─ 069f27cbd9d53394428171c3989fd03db73c76                 //
+│  │  ├─ ab                                                        //
+│  │  │  ├─ eb19391b0fa8749ae21088dc081f5fab2121c9                 //
+│  │  │  └─ f41eb0787a44d5e1d1b41059501de3e74f6151                 //
+│  │  ├─ ae                                                        //
+│  │  │  └─ 6c0a29959bc773b776b9cf935b7232c1bb3e80                 //
+│  │  ├─ b3                                                        //
+│  │  │  └─ 845f9b375154c08927aed645e91565a7d06c85                 //
+│  │  ├─ b7                                                        //
+│  │  │  └─ 90edd0df648fb9310a29711f325b1efc9517a7                 //
+│  │  ├─ b8                                                        //
+│  │  │  └─ 06b9be5e3248bbc2406140d6733a2d6074fa34                 //
+│  │  ├─ b9                                                        //
+│  │  │  ├─ a1a6deac8775b5598874b2bc3c7971d82cf211                 //
+│  │  │  └─ d355df2a5956b526c004531b7b0ffe412461e0                 //
+│  │  ├─ be                                                        //
+│  │  │  └─ a14bd3ad455155dd26b572d6cecf43c56b6e89                 //
+│  │  ├─ c1                                                        //
+│  │  │  └─ f203405cf606f79d47bd5d17e9f2592f414d95                 //
+│  │  ├─ cb                                                        //
+│  │  │  └─ 42337f6cd3cfbc21627ff621e69cf5e0a00f58                 //
+│  │  ├─ d4                                                        //
+│  │  │  └─ 8cd380c53073b0a0754348a72885c660efc115                 //
+│  │  ├─ d5                                                        //
+│  │  │  └─ 6aac83ae317c9e7d893eaff6f4ee65476c1678                 //
+│  │  ├─ dd                                                        //
+│  │  │  ├─ 0402e75ce204227e46883bada173431148029b                 //
+│  │  │  └─ aec7b870b18cb91729b2dbc370738efc0386f8                 //
+│  │  ├─ df                                                        //
+│  │  │  ├─ 4118dce87a1f5cf631b2128f93011aca962a7b                 //
+│  │  │  ├─ cd778d5f583d3edeef03d01179dbcf145b9edf                 //
+│  │  │  └─ fec03e6bf34440d65935fc6e78ce891eab9848                 //
+│  │  ├─ e5                                                        //
+│  │  │  └─ 4867b2571b8b1a05f28ee6255472e72d1b7359                 //
+│  │  ├─ e7                                                        //
+│  │  │  ├─ 438f3a07623074c369f0664ee0b816c3445532                 //
+│  │  │  ├─ b8dfb1b2a60bd50538bec9f876511b9cac21e3                 //
+│  │  │  └─ eb478e06580ae2e7bcb7d63669e7e35cd570c3                 //
+│  │  ├─ e9                                                        //
+│  │  │  └─ e57dc4d41b9b46e05112e9f45b7ea6ac0ba15e                 //
+│  │  ├─ ec                                                        //
+│  │  │  └─ b76ca787a5df74ad3f294d010d8a75fd6688e4                 //
+│  │  ├─ ed                                                        //
+│  │  │  └─ 1cdebd9de172fc2a0b26cae12845a495249ef8                 //
+│  │  ├─ ee                                                        //
+│  │  │  └─ 8219ceb5156fa8615e5a25153ab02c051130f3                 //
+│  │  ├─ f2                                                        //
+│  │  │  ├─ 2ede79ca1f3136596167cd81c0b8024140ed6f                 //
+│  │  │  └─ 63c7a9ffdf20ad980e2ec3aa3b62be53747e00                 //
+│  │  ├─ f5                                                        //
+│  │  │  └─ 08d3a6083bc3315221de7164e02aceb4d7c325                 //
+│  │  ├─ f6                                                        //
+│  │  │  └─ 7355ae04c4000eef464262481f6b02daa50789                 //
+│  │  ├─ f7                                                        //
+│  │  │  └─ 68e33fc946e6074d6bd3ce5d454853adb3615e                 //
+│  │  ├─ fc                                                        //
+│  │  │  ├─ 44b0a3796c0e0a64c3d858ca038bd4570465d9                 //
+│  │  │  └─ 6771fe2d82fad5e68b238aaefd89457a0dadff                 //
+│  │  ├─ ff                                                        //
+│  │  │  └─ 9f103679666c8e415f60666a8c4e61c6803fad                 //
+│  │  ├─ info                                                      //
+│  │  └─ pack                                                      //
+│  │     ├─ pack-9034dc5ba531e0199ca20a394d98456b34965278.idx      //
+│  │     ├─ pack-9034dc5ba531e0199ca20a394d98456b34965278.pack     //
+│  │     └─ pack-9034dc5ba531e0199ca20a394d98456b34965278.rev      //
+│  ├─ packed-refs                                                  //
+│  └─ refs                                                         //
+│     ├─ heads                                                     //
+│     │  └─ main                                                   //
+│     ├─ remotes                                                   //
+│     │  └─ origin                                                 //
+│     │     ├─ HEAD                                                //
+│     │     └─ main                                                //
+│     └─ tags                                                      //
+├─ .gitignore                                                      //
+├─ .prettierrc                                                     //
+├─ IMG_1951.PNG                                                    //
+├─ IMG_1952.PNG                                                    //
+├─ IMG_1953.PNG                                                    //
+├─ IMG_1960.jpg                                                    //
+├─ IMG_1961.jpg                                                    //
+├─ IMG_1965.PNG                                                    //
+├─ README.md                                                       //
+├─ package.json                                                    //
+├─ packages                                                        //
+│  ├─ demo                                                         //
+│  │  ├─ .gitignore                                                //
+│  │  ├─ README.md                                                 //
+│  │  ├─ data                                                      //
+│  │  │  └─ questions.json                                         //
+│  │  ├─ package-lock.json                                         //
+│  │  ├─ package.json                                              //
+│  │  ├─ public                                                    //
+│  │  │  ├─ favicon.ico                                            //
+│  │  │  ├─ index.html                                             //
+│  │  │  ├─ logo192.png                                            //
+│  │  │  ├─ logo512.png                                            //
+│  │  │  ├─ manifest.json                                          //
+│  │  │  └─ robots.txt                                             //
+│  │  └─ src                                                       //
+│  │     ├─ App.css                                                //
+│  │     ├─ App.js                                                 //
+│  │     ├─ App.test.js                                            //
+│  │     ├─ components                                             //
+│  │     ├─ index.css                                              //
+│  │     ├─ index.js                                               //
+│  │     ├─ logo.svg                                               //
+│  │     ├─ pages                                                  //
+│  │     │  ├─ Bank                                                //
+│  │     │  │  └─ index.js                                         //
+│  │     │  ├─ CalcTips.js                                         //
+│  │     │  ├─ EatAndSplit                                         //
+│  │     │  │  ├─ EatAndSplit.js                                   //
+│  │     │  │  └─ index.css                                        //
+│  │     │  ├─ ReactQuiz                                           //
+│  │     │  │  ├─ components                                       //
+│  │     │  │  │  ├─ DateCounter.js                                //
+│  │     │  │  │  ├─ Error.js                                      //
+│  │     │  │  │  ├─ FinishedScreen.js                             //
+│  │     │  │  │  ├─ Footer.js                                     //
+│  │     │  │  │  ├─ Header.js                                     //
+│  │     │  │  │  ├─ Loader.js                                     //
+│  │     │  │  │  ├─ Main.js                                       //
+│  │     │  │  │  ├─ NextButton.js                                 //
+│  │     │  │  │  ├─ Options.js                                    //
+│  │     │  │  │  ├─ Progress.js                                   //
+│  │     │  │  │  ├─ Question.js                                   //
+│  │     │  │  │  ├─ StartScreen.js                                //
+│  │     │  │  │  └─ Timer.js                                      //
+│  │     │  │  ├─ index.css                                        //
+│  │     │  │  ├─ index.js                                         //
+│  │     │  │  └─ questions.json                                   //
+│  │     │  ├─ TavelList                                           //
+│  │     │  │  ├─ TravelList.js                                    //
+│  │     │  │  └─ components                                       //
+│  │     │  │     ├─ Form.js                                       //
+│  │     │  │     ├─ Item.js                                       //
+│  │     │  │     ├─ List.js                                       //
+│  │     │  │     ├─ Logo.js                                       //
+│  │     │  │     └─ Stats.js                                      //
+│  │     │  ├─ TextExpender                                        //
+│  │     │  │  ├─ index.css                                        //
+│  │     │  │  └─ index.js                                         //
+│  │     │  ├─ UseGeolocation                                      //
+│  │     │  │  └─ app.js                                           //
+│  │     │  └─ UsePopcorn                                          //
+│  │     │     ├─ _.js                                             //
+│  │     │     ├─ components                                       //
+│  │     │     │  └─ StarRating.js                                 //
+│  │     │     ├─ index.css                                        //
+│  │     │     ├─ index.js                                         //
+│  │     │     ├─ useKey.js                                        //
+│  │     │     ├─ useLocalStorageState.js                          //
+│  │     │     └─ useMovies.js                                     //
+│  │     ├─ reportWebVitals.js                                     //
+│  │     └─ setupTests.js                                          //
+│  ├─ fast-react-pizza                                             //
+│  │  ├─ .eslintrc                                                 //
+│  │  ├─ .gitignore                                                //
+│  │  ├─ README.md                                                 //
+│  │  ├─ index.html                                                //
+│  │  ├─ package.json                                              //
+│  │  ├─ public                                                    //
+│  │  │  └─ vite.svg                                               //
+│  │  ├─ src                                                       //
+│  │  │  ├─ App.css                                                //
+│  │  │  ├─ App.jsx                                                //
+│  │  │  ├─ assets                                                 //
+│  │  │  │  └─ react.svg                                           //
+│  │  │  ├─ features                                               //
+│  │  │  │  ├─ cart                                                //
+│  │  │  │  ├─ menu                                                //
+│  │  │  │  ├─ order                                               //
+│  │  │  │  └─ user                                                //
+│  │  │  ├─ index.css                                              //
+│  │  │  ├─ main.jsx                                               //
+│  │  │  ├─ service                                                //
+│  │  │  ├─ ui                                                     //
+│  │  │  └─ utils                                                  //
+│  │  └─ vite.config.js                                            //
+│  ├─ package.json                                                 //
+│  ├─ redux-intro                                                  //
+│  │  ├─ README.md                                                 //
+│  │  ├─ package-lock.json                                         //
+│  │  ├─ package.json                                              //
+│  │  ├─ public                                                    //
+│  │  │  ├─ favicon.ico                                            //
+│  │  │  ├─ index.html                                             //
+│  │  │  ├─ logo192.png                                            //
+│  │  │  ├─ logo512.png                                            //
+│  │  │  ├─ manifest.json                                          //
+│  │  │  └─ robots.txt                                             //
+│  │  └─ src                                                       //
+│  │     ├─ App.js                                                 //
+│  │     ├─ features                                               //
+│  │     │  ├─ accounts                                            //
+│  │     │  │  ├─ AccountOperations.js                             //
+│  │     │  │  ├─ BalanceDisplay.js                                //
+│  │     │  │  ├─ accountSlice-v1.js                               //
+│  │     │  │  └─ accountSlice.js                                  //
+│  │     │  └─ customers                                           //
+│  │     │     ├─ CreateCustomer.js                                //
+│  │     │     ├─ Customer.js                                      //
+│  │     │     ├─ customerSlice-v1.js                              //
+│  │     │     └─ customerSlice.js                                 //
+│  │     ├─ index.css                                              //
+│  │     ├─ index.js                                               //
+│  │     ├─ store-v1.js                                            //
+│  │     └─ store.js                                               //
+│  └─ worldwise                                                    //
+│     ├─ .gitignore                                                //
+│     ├─ README.md                                                 //
+│     ├─ data                                                      //
+│     │  └─ cities.json                                            //
+│     ├─ eslint.config.js                                          //
+│     ├─ index.html                                                //
+│     ├─ package.json                                              //
+│     ├─ public                                                    //
+│     │  ├─ bg.jpg                                                 //
+│     │  ├─ icon.png                                               //
+│     │  ├─ img-1.jpg                                              //
+│     │  ├─ img-2.jpg                                              //
+│     │  ├─ logo.png                                               //
+│     │  └─ vite.svg                                               //
+│     ├─ src                                                       //
+│     │  ├─ App.css                                                //
+│     │  ├─ App.jsx                                                //
+│     │  ├─ assets                                                 //
+│     │  │  └─ react.svg                                           //
+│     │  ├─ components                                             //
+│     │  │  ├─ AppNav.jsx                                          //
+│     │  │  ├─ AppNav.module.css                                   //
+│     │  │  ├─ BackButton.jsx                                      //
+│     │  │  ├─ Button.jsx                                          //
+│     │  │  ├─ Button.module.css                                   //
+│     │  │  ├─ City.jsx                                            //
+│     │  │  ├─ City.module.css                                     //
+│     │  │  ├─ CityItem.jsx                                        //
+│     │  │  ├─ CityItem.module.css                                 //
+│     │  │  ├─ CityList.jsx                                        //
+│     │  │  ├─ CityList.module.css                                 //
+│     │  │  ├─ CountryItem.jsx                                     //
+│     │  │  ├─ CountryItem.module.css                              //
+│     │  │  ├─ CountryList.jsx                                     //
+│     │  │  ├─ CountryList.module.css                              //
+│     │  │  ├─ Form.jsx                                            //
+│     │  │  ├─ Form.module.css                                     //
+│     │  │  ├─ Logo copy.jsx                                       //
+│     │  │  ├─ Logo.jsx                                            //
+│     │  │  ├─ Logo.module.css                                     //
+│     │  │  ├─ Map.jsx                                             //
+│     │  │  ├─ Map.module.css                                      //
+│     │  │  ├─ Message.jsx                                         //
+│     │  │  ├─ Message.module.css                                  //
+│     │  │  ├─ PageNav.jsx                                         //
+│     │  │  ├─ PageNav.module.css                                  //
+│     │  │  ├─ Sidebar.jsx                                         //
+│     │  │  ├─ Sidebar.module.css                                  //
+│     │  │  ├─ Spinner.jsx                                         //
+│     │  │  ├─ Spinner.module.css                                  //
+│     │  │  ├─ SpinnerFullPage.jsx                                 //
+│     │  │  ├─ SpinnerFullPage.module.css                          //
+│     │  │  ├─ User.jsx                                            //
+│     │  │  └─ User.module.css                                     //
+│     │  ├─ contexts                                               //
+│     │  │  ├─ CitiesContext.jsx                                   //
+│     │  │  └─ FakeAuthContext.jsx                                 //
+│     │  ├─ hooks                                                  //
+│     │  │  ├─ useGeolocation.js                                   //
+│     │  │  └─ useUrlPosition.js                                   //
+│     │  ├─ index.css                                              //
+│     │  ├─ main.jsx                                               //
+│     │  └─ pages                                                  //
+│     │     ├─ Homepage.jsx                                        //
+│     │     ├─ Homepage.module.css                                 //
+│     │     ├─ Login.jsx                                           //
+│     │     ├─ Login.module.css                                    //
+│     │     ├─ PageNotFound.jsx                                    //
+│     │     ├─ Pricing.jsx                                         //
+│     │     ├─ Product.jsx                                         //
+│     │     └─ Product.module.css                                  //
+│     └─ vite.config.js                                            //
+└─ pnpm-workspace.yaml                                             //
+
+```
+
+```
